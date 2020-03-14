@@ -1,1 +1,4 @@
 .ipynb_checkpoints/*
+__pycache__/*
+GRM_data/*
+3d_data/*
