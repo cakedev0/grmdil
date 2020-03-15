@@ -26,12 +26,12 @@ class CloudDataset:
         for nb in self.neighborhoods:
             nb.compute_local_PCAs()
     
-    def get_edges(self, grm_k=8, grm_radius=0.08):
+    def get_edges(self, grm_k=8, grm_radius=0.08, grm_min_k=2):
         smallest_nb = None
         for (k, radius), nb in zip(self.neighborhoods_params, self.neighborhoods):
             if(k >= grm_k and radius >= grm_radius):
                 smallest_nb = nb
-        return nb.restrict(k=grm_k, radius=grm_radius).get_edges()
+        return nb.restrict(k=grm_k, radius=grm_radius, min_k=grm_min_k).get_edges()
     
     def compute_features(self, feature_functions):
         features = []
@@ -66,8 +66,8 @@ class CloudDataset:
         labeled = "unlabeled" if self.labels is None else "labeled"
         return f"CloudDataset<{self.name}, {self.points.shape[0]} points, {labeled}>"
     
-    def write_GRM(self, clf_scores, path, grm_k=8, grm_radius=0.05):
-        edges, distances = self.get_edges(grm_k, grm_radius)
+    def write_GRM(self, clf_scores, path, grm_k=8, grm_radius=0.05, grm_min_k=2):
+        edges, distances = self.get_edges(grm_k, grm_radius, grm_min_k)
         n, m = self.points.shape[0], distances.size
         with open(path / f"{self.name}_GRM.in", "w") as f:
             f.write(f"{n} {m}\n")

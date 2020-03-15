@@ -42,10 +42,11 @@ class Neighborhoods:
             kdt = KDTree(points)
             self.distances, self.neigh_idxs = kdt.query(points, k=k)
     
-    def restrict(self, k=10000, radius=1e9, inplace=False):
+    def restrict(self, k=10000, radius=1e9, min_k=0, inplace=False):
         whs = [ds < radius for ds in self.distances]
         for wh in whs:
             wh[k:] = False
+            wh[:min_k] = True
         res_neigh_idxs = []
         res_distances = []
         for wh, ns, ds in zip(whs, self.neigh_idxs, self.distances):
@@ -82,11 +83,9 @@ class Neighborhoods:
         edges = np.zeros((m, 2), dtype=int)
         j = 0
         for i, ns in enumerate(self.neigh_idxs):
-            l = min(ns.size, grm_k)
-            edges[j:j + l, 0] = i
-            edges[j:j + l, 1] = ns[:l]
-            j += l
-
+            edges[j:j + ns.size, 0] = i
+            edges[j:j + ns.size, 1] = ns
+            j += ns.size
         edges = edges[:j, :]
         edges = edges[edges[:, 0] != edges[:, 1], :]
         edges = drop_duplicated_rows(edges)
