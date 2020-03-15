@@ -2,3 +2,5 @@
 __pycache__/*
 GRM_data/*
 3d_data/*
+viz_data/*
+*.out

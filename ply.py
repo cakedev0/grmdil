@@ -1,47 +1,5 @@
-from sklearn.neighbors import KDTree
-import numba
-import numpy as np
-
-def local_PCA(points):
-    delta_p = points - points.mean(axis=0)
-    cov = (delta_p.T @ delta_p) / points.shape[0]
-    eigvals, eigvects = np.linalg.eigh(cov)
-    return eigvals[::-1], eigvects[:, ::-1]
-
-def min_radius_max_knns(X, radius, k):
-    all_neighs = []
-    kdt = KDTree(X)
-    print("kdt construction ok")
-    dists, neighs = kdt.query(X, k=k)
-    print("query ok")
-    for ns, wh in zip(neighs, dists <= radius):
-        all_neighs.append(X[ns[wh], :])
-    return all_neighs, neighs
-
-def neighborhood(points, radius, k):
-    kdt = KDTree(points)
-    all_eigenvalues = np.zeros((points.shape[0], 3))
-    all_eigenvectors = np.zeros((points.shape[0], 3, 3))
-    all_neighs, all_neigh_idxs = min_radius_max_knns(points, radius, k)
-    for i, neighs in enumerate(all_neighs):
-        eigvals, eigvects = local_PCA(neighs)
-        all_eigenvalues[i, :] = eigvals
-        all_eigenvectors[i, :] = eigvects
-    
-    return all_neighs, all_neigh_idxs, all_eigenvalues, all_eigenvectors
-
-def drop_duplicated_rows(data):
-    # Perform lex sort and get sorted data
-    sorted_idx = np.lexsort(data.T)
-    sorted_data =  data[sorted_idx,:]
-    
-    # Get unique row mask
-    row_mask = np.append([True],np.any(np.diff(sorted_data,axis=0),1))
-
-    # Get unique rows
-    return sorted_data[row_mask]
-
 import sys
+import numpy as np
 
 # Define PLY types
 ply_dtypes = dict([
