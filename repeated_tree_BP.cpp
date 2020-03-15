@@ -44,6 +44,7 @@ const int N_CLASS = 6;
 int n, m;
 double P[N_MAX][N_CLASS];
 double E[N_MAX][N_CLASS];
+double mass[N_CLASS];
 vector<Edge> edges;
 vector<pair<int, double> > neighs[N_MAX];
 int label[N_MAX];
@@ -52,10 +53,11 @@ int degree[N_MAX];
 int label_counts[N_MAX][N_CLASS];
 double alpha =  0.01;
 double beta = 0.02;
+double theta = 0.5;
 int n_repeat = 1;
 
-double f(double p){
-    return - p;
+double f(double p, int c){
+    return - p / pow(mass[c], theta);
 }
 
 double g(double d){
@@ -64,7 +66,7 @@ double g(double d){
 
 void compute_E(int u){
     REP(c, N_CLASS){
-        double ene = f(P[u][c]);
+        double ene = f(P[u][c], c);
         for(auto p : neighs[u]){
             int v = p.first;
             if(viewed[v]){
@@ -102,6 +104,8 @@ void backtrack_E(int u){
     }
 }
 
+bool root[N_MAX];
+
 int32_t main(int argc, char *argv[]){
     ios_base::sync_with_stdio(0);
     scanf("%d %d\n", &n, &m);
@@ -110,6 +114,13 @@ int32_t main(int argc, char *argv[]){
         degree[i] = 0;
         viewed[i] = false;
     }
+    
+    REP(c, N_CLASS) REP(i, n){
+        mass[c] += P[i][c];
+    }
+    double total_mass = 0;
+    REP(c, N_CLASS) total_mass += mass[c];
+    REP(c, N_CLASS) mass[c] /= total_mass;
 
     int u, v;
     double d;
@@ -143,6 +154,14 @@ int32_t main(int argc, char *argv[]){
                 degree[e.v] += 1;
             }
         }
+        
+        /*
+        fill(root, root+n, false);
+        REP(u, n) root[U.find(u)] = true;
+        int n_roots = 0;
+        REP(u, n) n_roots += root[u];
+        printf("n_roots: %d\n", n_roots);
+        */
 
         // FORWARD PASS
         REP(u, n){
